@@ -2,7 +2,6 @@ package com.ECommerce.Tshirt.Controllers;
 
 import com.ECommerce.Tshirt.DTO.UserDTO;
 import com.ECommerce.Tshirt.Exceptions.ResourceNotFoundException;
-import com.ECommerce.Tshirt.Helpers.passwordValidator.ValidPasswordHelper;
 import com.ECommerce.Tshirt.Mappers.UserMapper;
 import com.ECommerce.Tshirt.Models.User;
 import com.ECommerce.Tshirt.Services.UserService;
@@ -23,12 +22,6 @@ public class UserController {
     @GetMapping("/home")
     public String home() {
         return "Welcome to T-shirt Application";
-    }
-
-    @PostMapping("")
-    public ResponseEntity<UserDTO> addUser(@RequestBody User user) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(UserMapper.toUserDTO(userService.addUser(user)));
     }
 
     @GetMapping("/{userId}")

@@ -16,7 +16,6 @@ public class AuthenticationService {
 
     public boolean isAdmin() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        System.out.println("authentication : " + authentication);
         if (authentication != null && authentication.isAuthenticated()) {
             for (GrantedAuthority authority : authentication.getAuthorities()) {
                 System.out.println("Authority: " + authority.getAuthority());

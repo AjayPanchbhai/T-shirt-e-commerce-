@@ -52,9 +52,11 @@ public class User {
     @Column(name = "address", nullable = false)
     private String address;
 
+    @JoinColumn(name = "profile")
+    @OneToOne
+    private File profile;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonIgnore
     @JsonBackReference
     private Cart cart;
 

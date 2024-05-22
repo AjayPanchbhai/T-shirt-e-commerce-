@@ -6,7 +6,6 @@ import com.ECommerce.Tshirt.Models.CartProduct;
 import com.ECommerce.Tshirt.Models.User;
 import com.ECommerce.Tshirt.Repositories.CartRepository;
 import com.ECommerce.Tshirt.Repositories.UserRepository;
-import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,34 +20,31 @@ public class CartService {
     @Autowired
     private UserRepository userRepository;
 
-    // add Cart
-    @Transactional
-    public Cart addCart(long userId, Cart cart) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID : " + userId));
-        System.out.println(user);
-
-        List<Cart> carts = this.getAllCarts();
-        if(!carts.isEmpty() && cartRepository.findByUser(userId) != null) {
-            throw new IllegalArgumentException("Cart with user ID : " + userId + " already exists.");
-        }
-
-        cart.setUser(user);
-        return cartRepository.save(cart);
-    }
+    @Autowired
+    private AuthenticationService authenticationService;
 
     // get cart
-    public Optional<Cart> getCart(long cartId) {
-        return cartRepository.findById(cartId);
-    }
+    public Cart getCart(long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID : " + userId));
 
-    // get cart by user
-    public Optional<Cart> getCartByUser(long userId) {
-        return Optional.ofNullable(cartRepository.findByUser(userId));
+        if (!authenticationService.isSignedIn()) {
+            throw new RuntimeException("User is not signed in");
+        }
+
+        return user.getCart();
     }
 
     // get all cart
     public List<Cart> getAllCarts() {
+        if (!authenticationService.isSignedIn()) {
+            throw new RuntimeException("User is not signed in");
+        }
+
+        if (!authenticationService.isAdmin()) {
+            throw new RuntimeException("User is not authorized to add a product");
+        }
+
         return cartRepository.findAll();
     }
 
@@ -56,6 +52,10 @@ public class CartService {
     public Optional<Cart> updateCart(long userId, long productId, boolean isAdd) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User Not Found with ID : " + userId));
+
+        if (!authenticationService.isSignedIn()) {
+            throw new RuntimeException("User is not signed in");
+        }
 
         Cart cart = user.getCart();
         List<CartProduct> cartProducts = cart.getCartProducts();

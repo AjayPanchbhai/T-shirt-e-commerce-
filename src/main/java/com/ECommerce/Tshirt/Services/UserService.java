@@ -1,6 +1,5 @@
 package com.ECommerce.Tshirt.Services;
 
-import com.ECommerce.Tshirt.Helpers.passwordValidator.ValidPasswordHelper;
 import com.ECommerce.Tshirt.Models.User;
 import com.ECommerce.Tshirt.Repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,34 +13,37 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    // add user
-    public User addUser(User user) {
-        if(userRepository.existsByEmail(user.getEmail()))
-            throw new IllegalArgumentException("User with Email " + user.getEmail() + " already exists.");
-
-        ValidPasswordHelper validPasswordHelper = new ValidPasswordHelper();
-        String is = validPasswordHelper.isValid(user.getPassword());
-
-        if(!is.equalsIgnoreCase("valid"))
-            throw new IllegalArgumentException(is);
-
-        userRepository.save(user);
-
-        return user;
-    }
+    @Autowired
+    private AuthenticationService authenticationService;
 
     // get user
     public Optional<User> getUser(long userId) {
+        if (!authenticationService.isSignedIn()) {
+            throw new RuntimeException("User is not signed in");
+        }
+
         return userRepository.findById(userId);
     }
 
     // get all users
     public List<User> getAllUsers() {
+        if (!authenticationService.isSignedIn()) {
+            throw new RuntimeException("User is not signed in");
+        }
+
+        if (!authenticationService.isAdmin()) {
+            throw new RuntimeException("User is not authorized to add a product");
+        }
+
         return userRepository.findAll();
     }
 
     // update user
     public Optional<User> updateUser(long userId, User user) {
+        if (!authenticationService.isSignedIn()) {
+            throw new RuntimeException("User is not signed in");
+        }
+
         User user1 = userRepository.findById(userId).orElse(null);
 
         if(user1 != null) {
@@ -59,6 +61,14 @@ public class UserService {
 
     // delete user
     public Optional<User> deleteUser(long userId) {
+        if (!authenticationService.isSignedIn()) {
+            throw new RuntimeException("User is not signed in");
+        }
+
+        if (!authenticationService.isAdmin()) {
+            throw new RuntimeException("User is not authorized to add a product");
+        }
+
         User user = this.getUser(userId).orElse(null);
 
         if(user != null) {

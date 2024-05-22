@@ -1,4 +1,4 @@
-package com.ECommerce.Tshirt.Configuration;
+package com.ECommerce.Tshirt.Configurations;
 
 import com.ECommerce.Tshirt.Services.MyUserDetailsService;
 import com.ECommerce.Tshirt.Utilities.JwtRequestFilter;
@@ -43,8 +43,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(
-                                "/api/signin",
-                                "/api/signup",
+                                "/api/auths/**",
                                 "/api/products/all")
                         .permitAll()
                         .anyRequest()

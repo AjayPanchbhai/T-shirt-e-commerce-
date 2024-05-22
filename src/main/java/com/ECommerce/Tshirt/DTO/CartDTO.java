@@ -1,6 +1,5 @@
 package com.ECommerce.Tshirt.DTO;
 
-import com.ECommerce.Tshirt.Models.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
