@@ -69,7 +69,11 @@ public class ProductService {
     }
 
     // Update product
-    public Optional<Product> updateProduct(long productId, @NotNull Product product, MultipartFile[] files) throws IOException {
+    public Optional<Product> updateProduct(
+            long productId,
+            @NotNull Product product,
+            MultipartFile[] files
+    ) throws IOException {
         Product existingProduct = this.getProduct(productId);
 
         if (product.getName() != null) existingProduct.setName(product.getName());

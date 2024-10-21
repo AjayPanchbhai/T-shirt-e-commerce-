@@ -42,7 +42,7 @@ public class CartProductService {
         Cart cart = cartRepository.findByUser(userId);
 
         if (cart == null) {
-            throw new IllegalArgumentException("Cart with user ID: " + userId + " does not exist.");
+            throw new ResourceNotFoundException("Cart with user ID: " + userId + " does not exist.");
         }
 
         Optional<CartProduct> existingCartProductOpt = cart.getCartProducts().stream()

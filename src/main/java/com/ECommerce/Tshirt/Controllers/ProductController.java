@@ -49,16 +49,15 @@ public class ProductController {
     public ResponseEntity<ProductDTO> getProduct(
             @PathVariable long productId
     ) {
-
         return ResponseEntity.ok().body(ProductMapper.toProductDTO(productService.getProduct(productId)));
     }
 
     @GetMapping("/all")
     public ResponseEntity<Page<ProductDTO>> getAllProducts(
-            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "5") int size
     ) {
-        Pageable pageable = PageRequest.of(page - 1, size);
+        Pageable pageable = PageRequest.of(Math.max(1, page) - 1, size);
 
         return ResponseEntity.ok().body(productService
                 .getAllProducts(pageable)
@@ -71,10 +70,8 @@ public class ProductController {
             @RequestPart("product") Product product,
             @RequestPart("files") MultipartFile[] files
     ) throws IOException {
-
-        Product updatedProduct = productService.updateProduct( productId, product, files)
-                .orElseThrow(() -> new ResourceNotFoundException("Product Not Found with ID : " + productId));
-        return ResponseEntity.ok().body(ProductMapper.toProductDTO(updatedProduct));
+        return ResponseEntity.ok().body(ProductMapper.toProductDTO(productService.updateProduct( productId, product, files)
+                .orElseThrow(() -> new ResourceNotFoundException("Product Not Found with ID : " + productId))));
     }
 
     @DeleteMapping("/delete/{productId}")
