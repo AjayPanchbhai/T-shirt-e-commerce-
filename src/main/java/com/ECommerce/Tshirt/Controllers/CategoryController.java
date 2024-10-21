@@ -20,51 +20,41 @@ public class CategoryController {
     @Autowired
     private CategoryService categoryService;
 
-    @PostMapping("/{userId}")
-    public ResponseEntity<CategoryDTO> addCategory(@PathVariable long userId, @RequestBody Category category) {
+    @PostMapping("")
+    public ResponseEntity<CategoryDTO> addCategory(@RequestBody Category category) {
+
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(CategoryMapper.toCategoryDTO(categoryService.addCategory(userId, category)));
+                .body(CategoryMapper.toCategoryDTO(categoryService.addCategory(category)));
     }
 
     @GetMapping("/{categoryId}")
     public ResponseEntity<CategoryDTO> getCategory(@PathVariable long categoryId) {
-        Category category = categoryService.getCategory(categoryId).
-                orElseThrow(() -> new ResolutionException("Category Not Found with ID : " + categoryId));
 
         return ResponseEntity.status(HttpStatus.FOUND)
-                .body(CategoryMapper.toCategoryDTO(category));
+                .body(CategoryMapper.toCategoryDTO(categoryService.getCategory(categoryId)));
     }
 
-    @GetMapping("/all")
+    @GetMapping("")
     public ResponseEntity<List<CategoryDTO>> getAllCategories() {
-        List<Category> categories = categoryService.getAllCategories();
-
-        if(categories.isEmpty()) {
-            throw new ResourceNotFoundException("No Category Found!");
-        }
 
         return ResponseEntity.status(HttpStatus.FOUND)
-                .body(categories
-                        .stream()
-                        .map(CategoryMapper::toCategoryDTO)
-                        .collect(Collectors.toList()));
+                .body( categoryService.getAllCategories().stream().map(CategoryMapper::toCategoryDTO).collect(Collectors.toList()));
     }
 
     @PatchMapping("/{categoryId}")
-    public ResponseEntity<CategoryDTO> updateCategory(@PathVariable long categoryId, @RequestBody Category category) {
-        Category updatedCategory = categoryService.updateCategory(categoryId, category)
-                .orElseThrow(() -> new ResourceNotFoundException("Category not found with ID " + categoryId));
+    public ResponseEntity<CategoryDTO> updateCategory (
+            @PathVariable long categoryId,
+            @RequestBody Category category
+    ) {
 
         return ResponseEntity.status(HttpStatus.OK)
-                .body(CategoryMapper.toCategoryDTO(updatedCategory));
+                .body(CategoryMapper.toCategoryDTO(categoryService.updateCategory(categoryId, category)));
     }
 
     @DeleteMapping("/{categoryId}")
-    public ResponseEntity<CategoryDTO> deleteCategory(@PathVariable long categoryId) {
-        Category deletedCategory = categoryService.deleteCategory(categoryId)
-                .orElseThrow(() -> new ResourceNotFoundException("Category not found with ID " + categoryId));
+    public ResponseEntity<CategoryDTO> deleteCategory (@PathVariable long categoryId) {
 
         return ResponseEntity.status(HttpStatus.OK)
-                .body(CategoryMapper.toCategoryDTO(deletedCategory));
+                .body(CategoryMapper.toCategoryDTO(categoryService.deleteCategory(categoryId)));
     }
 }

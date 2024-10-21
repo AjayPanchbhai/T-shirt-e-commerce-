@@ -19,10 +19,5 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleGenericException(@NotNull Exception ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + ex.getMessage());
     }
-
-    @ExceptionHandler(ExpiredJwtException.class)
-    public ResponseEntity<String> handledExpiredJwtException(@NotNull ExpiredJwtException ex) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Error : " + ex.getMessage());
-    }
 }
 

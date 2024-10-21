@@ -23,7 +23,7 @@ public class File {
     private String fileType;
 
     @Lob
-    @Column(name = "data", nullable = false, columnDefinition="LONGBLOB")
+    @Column(name = "data", nullable = false, columnDefinition = "LONGBLOB")
     private byte[] data;
 
     public File(String fileName, String fileType, byte[] data) {

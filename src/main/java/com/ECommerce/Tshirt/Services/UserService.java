@@ -1,28 +1,44 @@
 package com.ECommerce.Tshirt.Services;
 
+import com.ECommerce.Tshirt.Exceptions.ResourceNotFoundException;
+import com.ECommerce.Tshirt.Models.File;
 import com.ECommerce.Tshirt.Models.User;
 import com.ECommerce.Tshirt.Repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class UserService {
-    @Autowired
-    private UserRepository userRepository;
+
+    private final AuthenticationService authenticationService;
+    private final FileService fileService;
+    private final UserRepository userRepository;
 
     @Autowired
-    private AuthenticationService authenticationService;
+    public UserService(
+            UserRepository userRepository,
+            AuthenticationService authenticationService,
+            FileService fileService
+    ) {
+        this.userRepository = userRepository;
+        this.fileService = fileService;
+        this.authenticationService = authenticationService;
+    }
+
 
     // get user
-    public Optional<User> getUser(long userId) {
+    public User getUser(long userId) {
         if (!authenticationService.isSignedIn()) {
             throw new RuntimeException("User is not signed in");
         }
 
-        return userRepository.findById(userId);
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID : " + userId));
     }
 
     // get all users
@@ -32,19 +48,47 @@ public class UserService {
         }
 
         if (!authenticationService.isAdmin()) {
-            throw new RuntimeException("User is not authorized to add a product");
+            throw new RuntimeException("You are not authorized to get/see other user details!");
         }
 
-        return userRepository.findAll();
+        List<User> users = userRepository.findAll();
+
+        if (users.isEmpty()) {
+            throw new ResourceNotFoundException("No User Found!");
+        }
+
+        return users;
     }
 
-    // update user
-    public Optional<User> updateUser(long userId, User user) {
+    // update user profile
+    public User updateUserProfile(long userId, MultipartFile profile) throws IOException {
+        User user = this.getUser(userId);
+
         if (!authenticationService.isSignedIn()) {
             throw new RuntimeException("User is not signed in");
         }
 
-        User user1 = userRepository.findById(userId).orElse(null);
+        if(profile == null)
+            throw new IllegalArgumentException("Profile might be Empty!, File is Required!");
+
+
+        List<File> files = fileService.getByFileNameAndFileType(profile);
+
+        if(files.isEmpty()) {
+            File savedFile = fileService.addFile(profile);
+            user.setProfile(savedFile);
+        }
+
+        return userRepository.save(user);
+    }
+
+    // update user
+    public User updateUser(long userId, User user) {
+        if (!authenticationService.isSignedIn()) {
+            throw new RuntimeException("User is not signed in");
+        }
+
+        User user1 = this.getUser(userId);
 
         if(user1 != null) {
             if(user.getFirstName() != null) user1.setFirstName(user.getFirstName());
@@ -56,11 +100,11 @@ public class UserService {
             userRepository.save(user1);
         }
 
-        return userRepository.findById(userId);
+        return user1;
     }
 
     // delete user
-    public Optional<User> deleteUser(long userId) {
+    public User deleteUser(long userId) {
         if (!authenticationService.isSignedIn()) {
             throw new RuntimeException("User is not signed in");
         }
@@ -69,13 +113,13 @@ public class UserService {
             throw new RuntimeException("User is not authorized to add a product");
         }
 
-        User user = this.getUser(userId).orElse(null);
+        User user = this.getUser(userId);
+        userRepository.deleteById(userId);
 
-        if(user != null) {
-            userRepository.deleteById(userId);
-            return Optional.of(user);
-        }
+        return user;
+    }
 
-        return Optional.empty();
+    public List<User> getUsersByFileId(Long fileId) {
+        return userRepository.findByProfile(fileId);
     }
 }

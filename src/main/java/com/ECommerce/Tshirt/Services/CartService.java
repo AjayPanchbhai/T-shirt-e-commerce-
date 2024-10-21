@@ -49,6 +49,7 @@ public class CartService {
     }
 
     // update cart
+    // adding product/cartProduct or remove
     public Optional<Cart> updateCart(long userId, long productId, boolean isAdd) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User Not Found with ID : " + userId));
@@ -60,6 +61,7 @@ public class CartService {
         Cart cart = user.getCart();
         List<CartProduct> cartProducts = cart.getCartProducts();
 
+        // finding given product exists or not
         CartProduct targetProduct = null;
         for (CartProduct cartProduct : cartProducts) {
             if (cartProduct.getProduct().getProductId() == productId) {
@@ -71,6 +73,7 @@ public class CartService {
         if(targetProduct == null)
             throw new ResourceNotFoundException("Cart Product is Not Found of ID : " + productId);
 
+        // adding product to cart
         if (isAdd) {
             targetProduct.setCount(targetProduct.getCount() + 1);
             cart.setAmount(cart.getAmount() + targetProduct.getProduct().getPrice());

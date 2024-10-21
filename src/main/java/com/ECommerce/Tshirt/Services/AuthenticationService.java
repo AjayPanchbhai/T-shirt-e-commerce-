@@ -19,7 +19,7 @@ public class AuthenticationService {
         if (authentication != null && authentication.isAuthenticated()) {
             for (GrantedAuthority authority : authentication.getAuthorities()) {
                 System.out.println("Authority: " + authority.getAuthority());
-                if (authority.getAuthority().equals("ADMIN")) { // Use "ROLE_ADMIN" to match the convention
+                if (authority.getAuthority().equalsIgnoreCase("ADMIN")) { // Use "ROLE_ADMIN" to match the convention
                     return true;
                 }
             }

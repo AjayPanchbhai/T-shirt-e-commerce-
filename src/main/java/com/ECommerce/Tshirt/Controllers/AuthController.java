@@ -5,7 +5,7 @@ import com.ECommerce.Tshirt.Helpers.passwordValidator.ValidPasswordHelper;
 import com.ECommerce.Tshirt.Mappers.UserMapper;
 import com.ECommerce.Tshirt.Models.User;
 import com.ECommerce.Tshirt.Repositories.UserRepository;
-import com.ECommerce.Tshirt.Services.OTPService;
+import com.ECommerce.Tshirt.Services.EmailService;
 import com.ECommerce.Tshirt.Utilities.JwtUtil;
 import jakarta.mail.MessagingException;
 import org.jetbrains.annotations.NotNull;
@@ -37,7 +37,7 @@ public class AuthController {
     private JwtUtil jwtUtil;
 
     @Autowired
-    private OTPService otpService;
+    private EmailService emailService;
 
     @PostMapping("/signup")
     public ResponseEntity<UserDTO> registerUser(@RequestBody @NotNull("Email and Password Required!") User user) {
@@ -64,10 +64,20 @@ public class AuthController {
         return "Auth Token : " + jwt;
     }
 
+    @PostMapping("/sendEmail")
+    public ResponseEntity<String> sendMail(@RequestParam String email) {
+        try {
+            emailService.sendEmail(email);
+            return ResponseEntity.ok().body("Email sent successfully");
+        } catch (MessagingException e) {
+            return ResponseEntity.status(500).body("message : Failed to send Mail\n" + "Error : " + e.getMessage());
+        }
+    }
+
     @PostMapping("/sendOTP")
     public ResponseEntity<String> sendOTP(@RequestParam String email) {
         try {
-            otpService.sendOTP(email);
+            emailService.sendOTP(email);
             return ResponseEntity.ok("OTP sent to your email.");
         } catch (MessagingException e) {
             return ResponseEntity.status(500).body("Error sending OTP.");
@@ -76,8 +86,8 @@ public class AuthController {
 
     @PostMapping("/verifyOTP")
     public ResponseEntity<String> verifyOTP(@RequestParam String email, @RequestParam String OTP) {
-        if (otpService.verifyOTP(email, OTP)) {
-            otpService.removeOTP(email);
+        if (emailService.verifyOTP(email, OTP)) {
+            emailService.removeOTP(email);
             return ResponseEntity.ok("OTP verified successfully. User logged in.");
         } else {
             return ResponseEntity.status(400).body("Invalid OTP.");

@@ -2,6 +2,7 @@ package com.ECommerce.Tshirt.Services;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -11,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
-public class OTPService {
+public class EmailService {
 
     @Autowired
     private JavaMailSender mailSender;
@@ -22,6 +23,17 @@ public class OTPService {
     public String generateOTP() {
         int otp = 100000 + random.nextInt(900000); // 6-digit OTP
         return String.valueOf(otp);
+    }
+
+    public void sendEmail(String email) throws MessagingException {
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+        helper.setTo(email);
+        helper.setSubject("Testing purpose");
+        helper.setText("Hi this mail you are getting these are just for testing purpose");
+
+        mailSender.send(message);
     }
 
     public void sendOTP(String email) throws MessagingException {
@@ -37,7 +49,7 @@ public class OTPService {
         mailSender.send(message);
     }
 
-    public boolean verifyOTP(String email, String otp) {
+    public boolean verifyOTP(String email, @NotNull String otp) {
         return otp.equals(otpStorage.get(email));
     }
 

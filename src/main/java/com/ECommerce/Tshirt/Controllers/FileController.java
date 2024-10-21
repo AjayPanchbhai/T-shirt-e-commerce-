@@ -1,5 +1,8 @@
 package com.ECommerce.Tshirt.Controllers;
 
+import com.ECommerce.Tshirt.DTO.FileDTO;
+import com.ECommerce.Tshirt.Exceptions.ResourceNotFoundException;
+import com.ECommerce.Tshirt.Mappers.FileMapper;
 import com.ECommerce.Tshirt.Models.File;
 import com.ECommerce.Tshirt.Services.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/files")
@@ -41,8 +45,26 @@ public class FileController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<byte[]>> getAllFiles() {
-        List<byte[]> files = fileService.getAllFiles();
-        return ResponseEntity.status(HttpStatus.FOUND).body(files);
+    public ResponseEntity<List<FileDTO>> getAllFiles() {
+        return ResponseEntity.status(HttpStatus.FOUND).body(
+                fileService.getAllFiles()
+                        .stream()
+                        .map(FileMapper::toFileDTO)
+                        .collect(Collectors.toList())
+        );
+    }
+
+    @GetMapping()
+    public ResponseEntity<List<FileDTO>> findByFileNameAndFileType(@RequestParam("profile") MultipartFile profile) {
+        List<File> files = fileService.getByFileNameAndFileType(profile);
+
+        if(files.isEmpty())
+            throw new ResourceNotFoundException("No file found");
+
+        return ResponseEntity.status(HttpStatus.FOUND).body(
+                files.stream()
+                        .map(FileMapper::toFileDTO)
+                        .collect(Collectors.toList())
+        );
     }
 }

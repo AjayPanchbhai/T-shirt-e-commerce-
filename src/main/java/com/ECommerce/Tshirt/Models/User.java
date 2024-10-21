@@ -1,20 +1,15 @@
 package com.ECommerce.Tshirt.Models;
 
-import com.ECommerce.Tshirt.Enums.OrderStatus;
 import com.ECommerce.Tshirt.Enums.Role;
-import com.ECommerce.Tshirt.Helpers.passwordValidator.ValidPassword;
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-
 import java.time.LocalDateTime;
 
 @Entity
@@ -22,9 +17,7 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 @ToString
-@Setter
 public class User {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id", nullable = false, unique = true)

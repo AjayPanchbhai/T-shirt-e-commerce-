@@ -31,11 +31,11 @@ public class ProductService {
     private AuthenticationService authenticationService;
 
     // Add product
-    public Product addProduct(long categoryId, Product product, MultipartFile[] files) throws IOException {
-        System.out.println(authenticationService.isSignedIn());
-        System.out.println("HIU");
-        System.out.println(authenticationService.isAdmin());
-
+    public Product addProduct(
+            long categoryId,
+            Product product,
+            MultipartFile[] files
+    ) throws IOException {
         if (!authenticationService.isSignedIn()) {
             throw new RuntimeException("User is not signed in");
         }
@@ -44,8 +44,7 @@ public class ProductService {
             throw new RuntimeException("User is not authorized to add a product");
         }
 
-        Category category = categoryService.getCategory(categoryId)
-                .orElseThrow(() -> new ResourceNotFoundException("Category Not Found with ID: " + categoryId));
+        Category category = categoryService.getCategory(categoryId);
 
         product.setCategory(category);
 
@@ -58,8 +57,10 @@ public class ProductService {
     }
 
     // Get product
-    public Optional<Product> getProduct(long productId) {
-        return  productRepository.findById(productId);
+    public Product getProduct(long productId) {
+
+        return productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product Not Found with ID : " + productId));
     }
 
     // Get all products
@@ -69,7 +70,7 @@ public class ProductService {
 
     // Update product
     public Optional<Product> updateProduct(long productId, @NotNull Product product, MultipartFile[] files) throws IOException {
-        Product existingProduct = this.getProduct(productId).orElseThrow(() -> new ResourceNotFoundException("Product not found with ID: " + productId));
+        Product existingProduct = this.getProduct(productId);
 
         if (product.getName() != null) existingProduct.setName(product.getName());
         if (product.getDescription() != null) existingProduct.setDescription(product.getDescription());
@@ -88,10 +89,10 @@ public class ProductService {
     }
 
     // Delete product
-    public Optional<Product> deleteProduct(long productId) {
-        Product product = this.getProduct(productId).orElse(null);
-        if (product != null) productRepository.deleteById(productId);
+    public Product deleteProduct(long productId) {
+        Product product = this.getProduct(productId);
+        productRepository.deleteById(productId);
 
-        return Optional.ofNullable(product);
+        return product;
     }
 }

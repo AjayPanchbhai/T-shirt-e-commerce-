@@ -2,7 +2,6 @@ package com.ECommerce.Tshirt.Services;
 
 import com.ECommerce.Tshirt.Exceptions.ResourceNotFoundException;
 import com.ECommerce.Tshirt.Models.Category;
-import com.ECommerce.Tshirt.Models.User;
 import com.ECommerce.Tshirt.Repositories.CategoryRepository;
 import com.ECommerce.Tshirt.Repositories.UserRepository;
 import org.jetbrains.annotations.NotNull;
@@ -10,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class CategoryService {
@@ -24,23 +22,20 @@ public class CategoryService {
     private AuthenticationService authenticationService;
 
     // add Category
-    public Category addCategory(long userId, @NotNull Category category) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID : " + userId));
+    public Category addCategory(@NotNull Category category) {
+    // User user = userRepository.findById(userId)
+    //      .orElseThrow(() -> new ResourceNotFoundException("User not found with ID : " + userId));
 
-        if (authenticationService.isSignedIn()) {
+        if (!authenticationService.isSignedIn()) {
             throw new RuntimeException("User is not signed in");
         }
 
-        System.out.println(authenticationService.isSignedIn());
-        System.out.println(authenticationService.isAdmin());
-
-        if (authenticationService.isAdmin()) {
-            throw new RuntimeException("User is not authorized to add a product");
+        if (!authenticationService.isAdmin()) {
+            throw new RuntimeException("User is not authorized to add a category");
         }
 
-        if (!user.getRole().toString().equalsIgnoreCase("ADMIN"))
-            throw new IllegalArgumentException("You are Not ADMIN!");
+    //  if (!user.getRole().toString().equalsIgnoreCase("ADMIN"))
+    //      throw new IllegalArgumentException("You are Not ADMIN!");
 
         if(categoryRepository.existsByName(category.getName())) {
             throw new IllegalArgumentException("Category with name " + category.getName() + " already exists.");
@@ -50,34 +45,58 @@ public class CategoryService {
     }
 
     // get Category
-    public Optional<Category> getCategory(long categoryId) {
-        return categoryRepository.findById(categoryId);
+    public Category getCategory(long categoryId) {
+
+        return categoryRepository.findById(categoryId)
+               .orElseThrow(() -> new ResourceNotFoundException("Category not found with ID : " + categoryId));
     }
 
     // get all category
     public List<Category> getAllCategories() {
-        return categoryRepository.findAll();
+
+        List<Category> categories = categoryRepository.findAll();
+
+        if(categories.isEmpty()) {
+            throw new ResourceNotFoundException("No Category Found!");
+        }
+
+        return categories;
     }
 
     // update category
-    public Optional<Category> updateCategory(long categoryId, Category category) {
-        Category category1 = this.getCategory(categoryId).orElse(null);
+    public Category updateCategory(long categoryId, @NotNull Category category) {
 
-        if(category1 != null) {
-            if(category.getName() != null) category1.setName(category.getName());
-
-            categoryRepository.save(category1);
+        if (!authenticationService.isSignedIn()) {
+            throw new RuntimeException("User is not signed in");
         }
 
-        return this.getCategory(categoryId);
+        if (!authenticationService.isAdmin()) {
+            throw new RuntimeException("User is not authorized to update a category");
+        }
+
+        Category category1 = this.getCategory(categoryId);
+
+        category1.setName(category.getName());
+        categoryRepository.save(category1);
+
+        return category1;
     }
 
     // delete category
-    public Optional<Category> deleteCategory(long categoryId) {
-        Category category = this.getCategory(categoryId).orElse(null);
-        if(category != null)
-            categoryRepository.deleteById(categoryId);
+    public Category deleteCategory(long categoryId) {
 
-        return Optional.ofNullable(category);
+        if (!authenticationService.isSignedIn()) {
+            throw new RuntimeException("User is not signed in");
+        }
+
+        if (!authenticationService.isAdmin()) {
+            throw new RuntimeException("User is not authorized to delete a category");
+        }
+
+        Category category = this.getCategory(categoryId);
+
+        categoryRepository.deleteById(categoryId);
+
+        return category;
     }
 }

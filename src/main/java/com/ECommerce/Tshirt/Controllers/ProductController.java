@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/products")
@@ -43,16 +42,15 @@ public class ProductController {
 
         // Save product with files
         Product savedProduct = productService.addProduct(categoryId, product, files);
-        return ResponseEntity.ok(ProductMapper.toProductDTO(savedProduct));
+        return ResponseEntity.ok().body(ProductMapper.toProductDTO(savedProduct));
     }
 
     @GetMapping("/{productId}")
     public ResponseEntity<ProductDTO> getProduct(
             @PathVariable long productId
     ) {
-        Product product = productService.getProduct(productId)
-                .orElseThrow(() -> new ResourceNotFoundException("Product Not Found with ID : " + productId));
-        return ResponseEntity.ok(ProductMapper.toProductDTO(product));
+
+        return ResponseEntity.ok().body(ProductMapper.toProductDTO(productService.getProduct(productId)));
     }
 
     @GetMapping("/all")
@@ -62,7 +60,7 @@ public class ProductController {
     ) {
         Pageable pageable = PageRequest.of(page - 1, size);
 
-        return ResponseEntity.ok(productService
+        return ResponseEntity.ok().body(productService
                 .getAllProducts(pageable)
                 .map(ProductMapper::toProductDTO));
     }
@@ -76,14 +74,13 @@ public class ProductController {
 
         Product updatedProduct = productService.updateProduct( productId, product, files)
                 .orElseThrow(() -> new ResourceNotFoundException("Product Not Found with ID : " + productId));
-        return ResponseEntity.ok(ProductMapper.toProductDTO(updatedProduct));
+        return ResponseEntity.ok().body(ProductMapper.toProductDTO(updatedProduct));
     }
 
     @DeleteMapping("/delete/{productId}")
-    public ResponseEntity<Optional<Product>> deleteProduct(
+    public ResponseEntity<ProductDTO> deleteProduct(
             @PathVariable long productId
     ) {
-        Optional<Product> product = productService.deleteProduct(productId);
-        return ResponseEntity.ok(product);
+        return ResponseEntity.ok().body(ProductMapper.toProductDTO(productService.deleteProduct(productId)));
     }
 }
